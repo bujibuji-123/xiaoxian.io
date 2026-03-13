@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>许愿树 · 心愿森林</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', system-ui, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #c8e9fd 0%, #e6f3d6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .wish-card {
+            max-width: 750px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(4px);
+            border-radius: 56px 56px 40px 40px;
+            box-shadow: 0 20px 35px rgba(110, 80, 20, 0.2), inset 2px 2px 10px rgba(255, 250, 220, 0.6);
+            padding: 30px 25px 35px;
+            border: 1px solid #f0f7da;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.4rem;
+            font-weight: 400;
+            letter-spacing: 4px;
+            color: #3f5a2e;
+            text-shadow: 2px 2px 0 #e9f5b6, 4px 4px 0 rgba(150, 120, 70, 0.2);
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+        h1 span {
+            display: inline-block;
+            transform: scale(1.2);
+            margin: 0 8px;
+        }
+
+        /* 树容器 */
+        .tree-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 15px 0 20px;
+            filter: drop-shadow(0 8px 12px rgba(70, 40, 10, 0.2));
+        }
+
+        /* 树冠 — 愿望生长的地方 */
+        .tree-crown {
+            width: 100%;
+            max-width: 520px;
+            min-width: 260px;
+            min-height: 240px;
+            background: 
+                radial-gradient(circle at 20% 35%, #d5f5b5, #6b8c40 75%),
+                repeating-radial-gradient(circle at 30% 40%, #9bbd6c, #4d702a 30%);
+            background-blend-mode: overlay;
+            border-radius: 70% 30% 60% 40% / 40% 55% 45% 60%;
+            box-shadow: inset -10px -15px 20px #3a5e1e, inset 15px 5px 25px #c8f098, 0 8px 0 #5e7a34;
+            padding: 20px 18px 18px 22px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 12px 10px;
+            transition: all 0.2s ease;
+            border: 2px solid #5c8036;
+            transform: rotate(-0.5deg);
+            margin-bottom: -8px; /* 与树干紧密连接 */
+            z-index: 5;
+            position: relative;
+        }
+
+        /* 小亮点 (树叶间隙光斑) */
+        .tree-crown::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 25px;
+            width: 80px;
+            height: 50px;
+            background: radial-gradient(circle, #f9ffe8 0%, transparent 70%);
+            border-radius: 50%;
+            opacity: 0.45;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 树干 */
+        .tree-trunk {
+            width: 100px;
+            height: 85px;
+            background: linear-gradient(145deg, #8b5a2b, #5e3e1c, #7b4d24);
+            border-radius: 30% 30% 15% 15% / 60% 60% 20% 20%;
+            box-shadow: inset -5px -10px 8px #4f3517, inset 8px 5px 12px #b98a4b, 0 5px 0 #4e3416;
+            border-bottom: 4px solid #3d2b12;
+            margin-top: -5px;
+            z-index: 4;
+            position: relative;
+            transform: rotate(0.5deg);
+        }
+
+        /* 树枝 (简单装饰) */
+        .tree-trunk::before,
+        .tree-trunk::after {
+            content: '';
+            position: absolute;
+            background: linear-gradient(130deg, #7b5a3a, #5d401f);
+            border-radius: 40% 40% 20% 20% / 60% 60% 30% 30%;
+            box-shadow: inset -2px -3px 5px #4b3113;
+        }
+        .tree-trunk::before {
+            width: 40px;
+            height: 18px;
+            top: -15px;
+            left: -20px;
+            transform: rotate(-35deg);
+            border-radius: 40% 20% 50% 30%;
+        }
+        .tree-trunk::after {
+            width: 50px;
+            height: 22px;
+            top: -10px;
+            right: -25px;
+            transform: rotate(45deg);
+            border-radius: 30% 40% 30% 50%;
+        }
+
+        /* 愿望标签 */
+        .wish-item {
+            background: rgba(255, 250, 235, 0.95);
+            backdrop-filter: blur(2px);
+            border-radius: 60px 20px 40px 40px;
+            padding: 6px 12px 6px 18px;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 6px 0 #aa8e60, 0 8px 12px rgba(0,0,0,0.15);
+            border: 1px solid #ffeecc;
+            transition: all 0.1s ease;
+            cursor: default;
+            max-width: 220px;
+            animation: gentle-appear 0.2s ease-out;
+            position: relative;
+            z-index: 10;
+            line-height: 1.4;
+        }
+        .wish-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 0 #9b7c4d, 0 12px 18px rgba(70, 40, 0, 0.25);
+        }
+
+        /* 愿望文字 */
+        .wish-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+            font-weight: 500;
+            color: #2d3b1a;
+        }
+
+        /* 删除小叉 */
+        .delete-wish {
+            background: rgba(220, 180, 120, 0.3);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 400;
+            color: #5e3a1e;
+            cursor: pointer;
+            transition: 0.15s;
+            border: none;
+            line-height: 1;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .delete-wish:hover {
+            background: #e0986b;
+            color: #2e1d0b;
+            transform: scale(1.15);
+            box-shadow: 0 3px 6px #ac5f2c;
+        }
+
+        /* 空树占位 */
+        .empty-placeholder {
+            background: rgba(245, 255, 210, 0.5);
+            backdrop-filter: blur(4px);
+            border: 2px dashed #8faa6e;
+            border-radius: 60px;
+            padding: 14px 24px;
+            margin: 20px auto;
+            color: #3b622b;
+            font-size: 1.3rem;
+            text-align: center;
+            width: 100%;
+            font-weight: 300;
+            letter-spacing: 1px;
+            box-shadow: inset 0 0 20px #e4f2ba;
+            cursor: default;
+        }
+
+        /* 输入区域 */
+        .wish-actions {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 14px 10px;
+            background: rgba(220, 240, 200, 0.5);
+            padding: 20px 20px;
+            border-radius: 80px 20px 80px 20px;
+            border: 1px solid #b4cf94;
+            box-shadow: inset 0 2px 10px #ebfad0;
+        }
+
+        .input-group {
+            display: flex;
+            flex: 2 1 260px;
+            align-items: center;
+            background: white;
+            border-radius: 60px;
+            box-shadow: 0 4px 0 #abb88b, 0 6px 10px rgba(0,0,0,0.05);
+            border: 1px solid #cddead;
+        }
+        .input-group input {
+            flex: 1;
+            border: none;
+            padding: 16px 22px;
+            font-size: 1.1rem;
+            background: transparent;
+            border-radius: 60px;
+            outline: none;
+            color: #2c4a1e;
+            font-weight: 400;
+            min-width: 200px;
+        }
+        .input-group input::placeholder {
+            color: #98ab80;
+            font-style: italic;
+        }
+
+        .btn {
+            border: none;
+            background: #ffefc0;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #415c28;
+            box-shadow: 0 6px 0 #b3915b, 0 6px 12px #6a563a4d;
+            cursor: pointer;
+            transition: 0.06s linear;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 1px solid #ecdca8;
+            letter-spacing: 1.2px;
+        }
+        .btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #b3915b, 0 6px 12px #917b56;
+        }
+        .btn.clear-btn {
+            background: #ecd7b0;
+            color: #5c481f;
+            box-shadow: 0 5px 0 #aa874b;
+            padding: 14px 24px;
+        }
+
+        .wish-counter {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 18px;
+            color: #2b4a1b;
+            font-weight: 500;
+            background: #dcedb9;
+            display: inline-block;
+            padding: 8px 30px;
+            border-radius: 40px;
+            box-shadow: inset 0 1px 6px #f5ffd3;
+            border: 1px solid #9bba78;
+        }
+
+        @keyframes gentle-appear {
+            0% { opacity: 0; transform: scale(0.7) rotate(-2deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+
+        /* 移动端微调 */
+        @media (max-width: 500px) {
+            .wish-card { padding: 20px 15px; border-radius: 40px; }
+            h1 { font-size: 2rem; }
+            .wish-item { max-width: 170px; }
+            .wish-text { max-width: 100px; }
+            .btn { padding: 12px 20px; }
+            .input-group input { padding: 14px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wish-card">
+        <h1>
+            <span>🌳</span> 许 愿 树 <span>🌳</span>
+        </h1>
+        <!-- 树区域 -->
+        <div class="tree-wrapper">
+            <div class="tree-crown" id="treeCrown">
+                <!-- 愿望会动态渲染到这里 -->
+            </div>
+            <div class="tree-trunk"></div>
+        </div>
+
+        <!-- 输入 & 操作区 -->
+        <div class="wish-actions">
+            <div class="input-group">
+                <input type="text" id="wishInput" placeholder="写下你的愿望..." maxlength="28" autocomplete="off">
+            </div>
+            <button class="btn" id="addWishBtn">✨ 许愿</button>
+            <button class="btn clear-btn" id="clearAllBtn">🍂 清空</button>
+        </div>
+
+        <!-- 愿望计数 -->
+        <div class="wish-counter">
+            🌱 愿望数量 · <span id="wishCount">0</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // 存储所有愿望的数组
+            let wishes = [];
+
+            // DOM 元素
+            const treeCrown = document.getElementById('treeCrown');
+            const wishInput = document.getElementById('wishInput');
+            const addBtn = document.getElementById('addWishBtn');
+            const clearBtn = document.getElementById('clearAllBtn');
+            const wishCountSpan = document.getElementById('wishCount');
+
+            // 辅助函数：渲染树冠内的所有愿望 + 空状态
+            function renderWishes() {
+                // 清空树冠
+                treeCrown.innerHTML = '';
+
+                if (wishes.length === 0) {
+                    // 空状态占位符
+                    const emptyDiv = document.createElement('div');
+                    emptyDiv.className = 'empty-placeholder';
+                    emptyDiv.textContent = '🌱 许下第一个愿望吧 🌱';
+                    treeCrown.appendChild(emptyDiv);
+                } else {
+                    // 循环构建每个愿望标签
+                    wishes.forEach((wishText, index) => {
+                        const wishItem = document.createElement('div');
+                        wishItem.className = 'wish-item';
+                        wishItem.setAttribute('data-index', index);
+                        // 完整愿望显示在title (鼠标悬停)
+                        wishItem.setAttribute('title', wishText);
+
+                        // 愿望文本span
+                        const textSpan = document.createElement('span');
+                        textSpan.className = 'wish-text';
+                        textSpan.textContent = wishText;  // 使用textContent防止XSS
+
+                        // 删除按钮
+                        const deleteSpan = document.createElement('span');
+                        deleteSpan.className = 'delete-wish';
+                        deleteSpan.innerHTML = '✕';  // 乘号
+                        deleteSpan.setAttribute('aria-label', '删除愿望');
+
+                        wishItem.appendChild(textSpan);
+                        wishItem.appendChild(deleteSpan);
+                        treeCrown.appendChild(wishItem);
+                    });
+                }
+
+                // 更新计数器
+                wishCountSpan.textContent = wishes.length;
+            }
+
+            // 添加新愿望
+            function addWish() {
+                let rawWish = wishInput.value.trim();
+                if (rawWish === '') {
+                    // 简单提示但不破坏美观 (晃动输入框)
+                    wishInput.style.border = '2px solid #e0705a';
+                    wishInput.style.backgroundColor = '#fff3f0';
+                    setTimeout(() => {
+                        wishInput.style.border = '';
+                        wishInput.style.backgroundColor = '';
+                    }, 300);
+                    return;
+                }
+
+                // 长度限制已经在html上maxlength，但再检查一次
+                if (rawWish.length > 30) rawWish = rawWish.slice(0, 30);
+
+                // 加入愿望数组
+                wishes.push(rawWish);
+                // 重新渲染树冠
+                renderWishes();
+                // 清空输入框，获取焦点
+                wishInput.value = '';
+                wishInput.focus();
+            }
+
+            // 事件监听：使用事件委托处理删除 (点击小叉)
+            treeCrown.addEventListener('click', function(e) {
+                // 找到被点击的删除按钮 (closest处理可能点到内部文字)
+                const deleteBtn = e.target.closest('.delete-wish');
+                if (!deleteBtn) return;  // 不是点击删除按钮则忽略
+
+                // 阻止冒泡，避免意外触发其他监听
+                e.stopPropagation();
+                // 获取整个愿望条目
+                const wishItem = deleteBtn.closest('.wish-item');
+                if (!wishItem) return;
+
+                const index = wishItem.getAttribute('data-index');
+                if (index !== null && wishes[index]) {
+                    // 从数组中移除该项
+                    wishes.splice(index, 1);
+                    // 重新渲染树冠
+                    renderWishes();
+                }
+            });
+
+            // 添加愿望按钮点击
+            addBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                addWish();
+            });
+
+            // 输入框回车
+            wishInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addWish();
+                }
+            });
+
+            // 清空所有愿望
+            clearBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (wishes.length === 0) {
+                    // 如果已经空，轻微提示
+                    alert('树上已经没有愿望啦～ 写一个吧 ✨');
+                    return;
+                }
+                // 确认是否清空 (不强制，但提供确认框更友好)
+                if (confirm('🧹 确定要清空所有愿望吗？')) {
+                    wishes = [];           // 清空数组
+                    renderWishes();        // 重新渲染
+                    wishInput.focus();
+                }
+            });
+
+            // 可选：单击输入框时去除错误样式
+            wishInput.addEventListener('focus', function() {
+                wishInput.style.border = '';
+                wishInput.style.backgroundColor = '';
+            });
+
+            // 初始化渲染 (空树)
+            renderWishes();
+
+            // 附加小彩蛋：随机给第一个来访者一个默认温暖愿望？(去掉注释即可预置两条)
+            // 但为了体现手动输入，这里保留空树。 也可以预置示例但注释掉。
+            // 如果想演示时有点内容，可以取消下行：
+            // wishes = ['家人平安', '世界和平', '小猫健康']; renderWishes();
+            // 按需求“支持手动输入”，默认为空更能体现输入。 如果希望有点缀，可放开，不影响手动。
+            // 为了美观且初次不空旷，加入两条示例但保留完全手动能力（用户可删除） 很多人喜欢初始有内容。
+            // 这里选择加两条柔和示例，让树不孤单，同时完全可删。
+            // 尊重原始需求，但加示例更生动。可注释。
+            // 我决定加两句，但用户一进来就能看到删除和添加的效果。  如果要求纯手动，可注释。
+            // 根据题目“支持手动输入愿望”，没有禁止预置，我就放两句温暖的欢迎语吧。
+            wishes = ['✨ 天天开心', '🍀 梦想成真'];
+            renderWishes();
+            // 当然，用户可以删除它们，并添加自己的愿望。
+        })();
+    </script>
+</body>
+</html>
